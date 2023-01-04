@@ -17,6 +17,7 @@ jobs:
         with:
           distribution: 'corretto'
           java-version: '17'
+          cache: 'maven'
 
       - name: Package with Maven
         id: package
@@ -36,28 +37,37 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build, tag, and push image to Amazon ECR
+        id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: PR-${{github.event.number}}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$GITHUB_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$GITHUB_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-  # deploy:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   environment: Dev
-  #   permissions:
-  #     id-token: write
-  #     contents: read
-  #   steps:
-  #   - uses: actions/checkout@v2
-  #   - uses: aws-actions/configure-aws-credentials@v1
-  #     with:
-  #       role-to-assume: ${{ secrets.IAMROLE_GITHUB }}
-  #       role-session-name: GitHub-Action-Role
-  #       aws-region: ${{ env.AWS_REGION }}
-  #   - run: |
-  #       echo "Deploying branch ${{ env.GITHUB_REF }} to ${{ github.event.inputs.environment }}"
-  #       commit_hash=`git rev-parse HEAD`
-  #       aws deploy create-deployment --application-name CodeDeployAppNameWithASG --deployment-group-name CodeDeployGroupName --github-location repository=$GITHUB_REPOSITORY,commitId=$commit_hash --ignore-application-stop-failures
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: dev
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ACCOUNT_ROLE }}
+          role-session-name: samplerolesession
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: .aws/task-definition.json
+          container-name: ${{ env.GITHUB_REPOSITORY }}
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Output task definition
+        run: echo ${{ steps.task-def.outputs.task-definition }}
