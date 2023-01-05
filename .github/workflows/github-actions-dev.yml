@@ -68,9 +68,9 @@ jobs:
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: .aws/task-definition.json
           container-name: ${{ env.GITHUB_REPOSITORY }}
           image: ${{ steps.build-image.outputs.image }}
+          task-definition: .aws/task-definition.json
 
       - name: Output task definition
         run: echo ${{ steps.task-def.outputs.task-definition }}
