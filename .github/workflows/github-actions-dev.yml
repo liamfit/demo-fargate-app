@@ -62,7 +62,9 @@ jobs:
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
       - name: Debug
-        run: env
+        run: |
+          echo ${{ env.GITHUB_REPOSITORY }}
+          echo ${{ steps.build-image.outputs.image }}
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
@@ -70,7 +72,7 @@ jobs:
         with:
           container-name: liamfit/sample-app
           image: 629239571689.dkr.ecr.us-east-1.amazonaws.com/liamfit/sample-app:36cb4183b022314db7bdde3be1c6ce6677e9b605
-          task-definition: .aws/task-definition.json
+          task-definition: ./.aws/task-definition.json
 
       - name: Output task definition
         run: echo ${{ steps.task-def.outputs.task-definition }}
