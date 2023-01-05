@@ -3,6 +3,10 @@ name: Build and Deploy - Development
 on: 
   pull_request:
 
+
+env:
+  CONTAINER_NAME: sample-app
+
 jobs:
   build:
     name: Build and Package
@@ -66,8 +70,8 @@ jobs:
 
       - name: Debug
         run: |
-          echo ${{ env.GITHUB_REPOSITORY }}
-          echo ${{ steps.build-image.outputs.image }}
+          echo '${{ env.GITHUB_REPOSITORY }}'
+          echo '${{ steps.build-image.outputs.image }}'
           pwd
           ls -la
 
@@ -75,12 +79,11 @@ jobs:
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          container-name: $GITHUB_REPOSITORY
+          container-name: $CONTAINER_NAME
           image: test
           task-definition: .aws/task-definition.json
         env:
           CONTAINER_NAME: ${{ env.GITHUB_REPOSITORY }}
-          IMAGE: ${{ steps.build-image.outputs.image }}
 
       - name: Output task definition
         run: echo ${{ steps.task-def.outputs.task-definition }}
