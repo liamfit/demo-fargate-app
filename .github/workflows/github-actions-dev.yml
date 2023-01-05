@@ -72,8 +72,8 @@ jobs:
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ env.IMAGE }}
+          container-name: ${{ CONTAINER_NAME }}
+          image: bill
           task-definition: ./.aws/task-definition.json
         env:
           CONTAINER_NAME: ${{ env.GITHUB_REPOSITORY }}
