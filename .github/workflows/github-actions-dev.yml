@@ -66,9 +66,9 @@ jobs:
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        uses: aws-actions/amazon-ecs-render-task-definition@v1.1.2
         with:
-          container-name: bill
+          container-name: ${{ env.GITHUB_REPOSITORY }}
           image: ${{ steps.build-image.outputs.image }}
           task-definition: .aws/task-definition.json
 
