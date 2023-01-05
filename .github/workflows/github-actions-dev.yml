@@ -54,6 +54,9 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -73,8 +76,8 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           container-name: $GITHUB_REPOSITORY
-          image: bill
-          task-definition: ./.aws/task-definition.json
+          image: test
+          task-definition: .aws/task-definition.json
         env:
           CONTAINER_NAME: ${{ env.GITHUB_REPOSITORY }}
           IMAGE: ${{ steps.build-image.outputs.image }}
