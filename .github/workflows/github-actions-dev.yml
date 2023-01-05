@@ -79,7 +79,7 @@ jobs:
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          container-name: $CONTAINER_NAME
+          container-name: ${{ env.CONTAINER_NAME }}
           image: test
           task-definition: .aws/task-definition.json
         env:
