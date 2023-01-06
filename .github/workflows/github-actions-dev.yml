@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    name: Build and Package
+    name: Build and Push
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -61,10 +61,11 @@ jobs:
       - name: Publish artifact
         uses: actions/upload-artifact@v2
         with:
-          name: task-definition.json
+          name: task-definition
           path: ${{ steps.task-def.outputs.task-definition }}
 
   deploy-to-dev:
+    name: Deploy to Dev
     needs: build
     runs-on: ubuntu-latest
     environment: dev
