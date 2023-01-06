@@ -57,7 +57,7 @@ jobs:
           echo "$CONTAINER_NAME"
           echo "${{ steps.build-image.outputs.image }}"
 
-      - name: Fill in the new image ID in the Amazon ECS task definition
+      - name: Render task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
@@ -65,5 +65,35 @@ jobs:
           image: ${{ steps.build-image.outputs.image }}
           task-definition: .aws/task-definition.json
 
+      - name: Publish artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: task-definition
+          path: ${{ steps.task-def.outputs.task-definition }}"
+
+  deploy-to-dev:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: dev
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ACCOUNT_ROLE }}
+          role-session-name: samplerolesession
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+      
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: task-definition
+          path: .aws/task-definition.json
+
       - name: Output task definition
-        run: cat "${{ steps.task-def.outputs.task-definition }}"
+        run: cat .aws/task-definition.json
