@@ -41,4 +41,4 @@ jobs:
           task-definition: .aws/task-definition.json
 
       - name: Output task definition
-        run: echo "${{ steps.task-def.outputs.task-definition }}"
+        run: echo "${{ toJSON(steps.task-def.outputs.task-definition) }}"
