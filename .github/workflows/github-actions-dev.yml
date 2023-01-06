@@ -81,13 +81,13 @@ jobs:
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
       
       - name: Download artifact
+        id: download
         uses: actions/download-artifact@v3
         with:
           name: task-definition
-          path: .aws/
 
-      - name: Debug
-        run: ls -l .aws/
+      - name: Rename file
+        run: mv ${{ steps.download.outputs.download-path }} task-definition.json
       
       - name: Output task definition
-        run: cat .aws/task-definition*
+        run: cat task-definition.json
