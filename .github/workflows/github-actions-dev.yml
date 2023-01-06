@@ -84,10 +84,10 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: task-definition
-          path: .aws/task-definition.json
+          path: .aws/
 
       - name: Debug
         run: ls -l .aws/
       
       - name: Output task definition
-        run: cat .aws/task-definition.json
+        run: cat .aws/task-definition*
