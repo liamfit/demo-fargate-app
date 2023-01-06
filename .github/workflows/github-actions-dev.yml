@@ -86,8 +86,8 @@ jobs:
         with:
           name: task-definition
 
-      - name: Debug
-        run: echo "${{ toJSON(steps.download.outputs) }}"
+      - name: Rename file
+        run: mv task-definition-*.json task-definition.json
       
-      # - name: Output task definition
-      #   run: cat task-definition.json
+      - name: Output task definition
+        run: cat task-definition.json
