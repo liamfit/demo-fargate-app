@@ -58,8 +58,8 @@ jobs:
           image: ${{ steps.build-image.outputs.image }}
           task-definition: .aws/task-definition.json
 
-      - name: Publish artifact
-        uses: actions/upload-artifact@v2
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
         with:
           name: task-definition
           path: ${{ steps.task-def.outputs.task-definition }}
@@ -81,13 +81,13 @@ jobs:
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
       
       - name: Download artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: task-definition
           path: .aws/task-definition.json
 
-      - name: Unzip artifact
-        run: unzip -p task-definition.zip > .aws/task-definition.json
+      - name: Debug
+        run: ls -l .aws/
       
       - name: Output task definition
         run: cat .aws/task-definition.json
