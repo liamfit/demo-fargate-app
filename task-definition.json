@@ -1,0 +1,26 @@
+{
+  "family": "sample-app-containers",
+  "containerDefinitions": [
+    {
+      "name": "sample-app",
+      "image": "629239571689.dkr.ecr.us-east-1.amazonaws.com/sample-app:5d36faa0640bd18fa11b35c2a4ab28b73e06f1b4",
+      "cpu": 10,
+      "memory": 300,
+      "memoryReservation": 0,
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 80,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "ENV",
+          "value": ""
+        }
+      ]
+    }
+  ]
+}
