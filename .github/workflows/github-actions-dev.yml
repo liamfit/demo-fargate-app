@@ -50,13 +50,19 @@ jobs:
           docker push $ECR_REGISTRY/$CONTAINER_NAME:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$CONTAINER_NAME:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
+      - name: Pull task definition
+        run: >
+          aws ecs describe-task-definition
+          --task-definition $CONTAINER_NAME
+          --query taskDefinition > task-definition.json
+
       - name: Render task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.build-image.outputs.image }}
-          task-definition: .aws/task-definition.json
+          task-definition: task-definition.json
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
@@ -91,3 +97,11 @@ jobs:
       
       - name: Output task definition
         run: cat task-definition.json
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          service: $CONTAINER_NAME
+          cluster: ecs-fargate
+          wait-for-service-stability: true
