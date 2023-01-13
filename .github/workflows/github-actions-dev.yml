@@ -108,6 +108,6 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: task-definition.json
-          service: $REPO_SHORT_NAME
+          service: ${{ env.REPO_SHORT_NAME }}
           cluster: ecs-fargate
           wait-for-service-stability: true
