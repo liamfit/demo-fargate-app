@@ -11,6 +11,9 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - name: Set repo short name
+        run: echo "REPO_SHORT_NAME=${GITHUB_REPOSITORY#*\/}" >> $GITHUB_ENV
+
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -31,14 +34,14 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_INFRA_ACCOUNT_ID }}:role/${{ secrets.AWS_INFRA_ACCOUNT_ROLE }}
           role-session-name: samplerolesession
-          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Set container name
-        run: echo "CONTAINER_NAME=${GITHUB_REPOSITORY#*\/}" >> $GITHUB_ENV
+        run: echo "REPO_SHORT_NAME=${GITHUB_REPOSITORY#*\/}" >> $GITHUB_ENV
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
@@ -46,17 +49,23 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$CONTAINER_NAME:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$CONTAINER_NAME:$IMAGE_TAG
-          echo "image=$ECR_REGISTRY/$CONTAINER_NAME:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          docker build -t $ECR_REGISTRY/$REPO_SHORT_NAME:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$REPO_SHORT_NAME:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$REPO_SHORT_NAME:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Pull task definition
+        run: >
+          aws ecs describe-task-definition
+          --task-definition $REPO_SHORT_NAME
+          --query taskDefinition > task-definition.json
 
       - name: Render task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          container-name: ${{ env.CONTAINER_NAME }}
+          container-name: ${{ env.REPO_SHORT_NAME }}
           image: ${{ steps.build-image.outputs.image }}
-          task-definition: .aws/task-definition.json
+          task-definition: task-definition.json
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
@@ -73,12 +82,15 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - name: Set repo short name
+        run: echo "REPO_SHORT_NAME=${GITHUB_REPOSITORY#*\/}" >> $GITHUB_ENV
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ACCOUNT_ROLE }}
           role-session-name: samplerolesession
-          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
       
       - name: Download artifact
         id: download
@@ -91,3 +103,11 @@ jobs:
       
       - name: Output task definition
         run: cat task-definition.json
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          service: ${{ env.REPO_SHORT_NAME }}
+          cluster: ecs-fargate
+          wait-for-service-stability: true
