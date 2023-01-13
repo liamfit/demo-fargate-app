@@ -126,13 +126,16 @@ resource "aws_lb_target_group" "alb_ecs_tg" {
   vpc_id      = local.vpc
 }
 
-# Create the ALB listener with the target group.
-resource "aws_lb_listener" "ecs_alb_listener" {
-  load_balancer_arn = local.alb
-  port              = "8080"
-  protocol          = "HTTP"
-  default_action {
+resource "aws_lb_listener_rule" "listener_rule" {
+  listener_arn      = local.alb_listener
+
+  action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.alb_ecs_tg.arn
+  }
+  condition {
+    path_pattern {
+      values = ["/"]
+    }
   }
 }
