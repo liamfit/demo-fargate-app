@@ -54,7 +54,7 @@ resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attach
 }
 
 resource "aws_ecs_service" "service" {
- name                               = "${var.service_name}-service"
+ name                               = "${var.service_name}"
  cluster                            = local.ecs_cluster
  task_definition                    = aws_ecs_task_definition.task_def.arn
  desired_count                      = 2
@@ -72,7 +72,7 @@ resource "aws_ecs_service" "service" {
  load_balancer {
    target_group_arn = aws_lb_target_group.alb_ecs_tg.arn
    container_name   = var.service_name
-   container_port   = 80
+   container_port   = 8080
  }
  
  lifecycle {
@@ -94,9 +94,17 @@ resource "aws_ecs_task_definition" "task_def" {
     essential   = true
     portMappings = [{
       protocol      = "tcp"
-      containerPort = 80
-      hostPort      = 80
+      containerPort = 8080
+      hostPort      = 8080
     }]
+    logConfiguration: {
+      logDriver: "awslogs"
+      options: {
+        awslogs-group: "${aws_cloudwatch_log_group.log-group.id}"
+        awslogs-region: "${var.aws_region}"
+        awslogs-stream-prefix: "ecs"
+      }
+    }
   }])
 
   tags = {
@@ -105,9 +113,14 @@ resource "aws_ecs_task_definition" "task_def" {
   }
 }
 
+resource "aws_cloudwatch_log_group" "log-group" {
+  name = "${var.service_name}-logs"
+}
+
+
 # Create the ALB target group for ECS.
 resource "aws_lb_target_group" "alb_ecs_tg" {
-  port        = 80
+  port        = 8080
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = local.vpc
@@ -116,7 +129,7 @@ resource "aws_lb_target_group" "alb_ecs_tg" {
 # Create the ALB listener with the target group.
 resource "aws_lb_listener" "ecs_alb_listener" {
   load_balancer_arn = local.alb
-  port              = "80"
+  port              = "8080"
   protocol          = "HTTP"
   default_action {
     type             = "forward"
