@@ -46,7 +46,7 @@ jobs:
           terraform apply -auto-approve -no-color -input=false
           -var="project=${{ vars.PROJECT }}"
           -var="environment=dev"
-          -var="service_name=${SHORT_REPO_NAME}"
+          -var="service_name=${REPO_SHORT_NAME}"
         continue-on-error: true
 
       - name: Comment on PR
