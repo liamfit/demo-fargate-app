@@ -18,11 +18,6 @@ variable "environment" {
   default = ""
 }
 
-variable "container_image" {
-  type    = string
-  default = ""
-}
-
 variable "container_port" {
   type    = number
   default = 8080

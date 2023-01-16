@@ -90,7 +90,7 @@ resource "aws_ecs_task_definition" "task_def" {
   task_role_arn            = aws_iam_role.ecs_task_role.arn
   container_definitions = jsonencode([{
     name        = "${var.service_name}"
-    image       = "${var.container_image}"
+    image       = "${aws_ecr_repository.app_container_repo.repository_url}:latest"
     essential   = true
     portMappings = [{
       protocol      = "tcp"
