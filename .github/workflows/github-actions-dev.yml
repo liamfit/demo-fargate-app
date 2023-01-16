@@ -44,7 +44,7 @@ jobs:
         working-directory: terraform
         run: >
           terraform apply -auto-approve -no-color -input=false
-          -var="project=${PROJECT}"
+          -var="project=${{ vars.PROJECT }}"
           -var="environment=dev"
           -var="service_name=${SHORT_REPO_NAME}"
         continue-on-error: true
