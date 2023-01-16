@@ -47,6 +47,7 @@ jobs:
           -var="service_name=${REPO_SHORT_NAME}"
           -var="project=${{ vars.PROJECT }}"
           -var="environment=dev"
+          -var="aws_region=${{ secrets.AWS_REGION }}"
         continue-on-error: true
 
       - name: Comment on PR
