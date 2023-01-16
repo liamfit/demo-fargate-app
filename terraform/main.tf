@@ -72,7 +72,7 @@ resource "aws_ecs_service" "service" {
  load_balancer {
    target_group_arn = aws_lb_target_group.alb_ecs_tg.arn
    container_name   = var.service_name
-   container_port   = 8080
+   container_port   = var.container_port
  }
  
  lifecycle {
@@ -84,18 +84,18 @@ resource "aws_ecs_task_definition" "task_def" {
   family                   = "${var.service_name}"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = 256
-  memory                   = 512
+  cpu                      = var.cpu
+  memory                   = var.memory
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   task_role_arn            = aws_iam_role.ecs_task_role.arn
   container_definitions = jsonencode([{
     name        = "${var.service_name}"
-    image       = "369168831564.dkr.ecr.us-east-1.amazonaws.com/sample-app:latest"
+    image       = "${var.container_image}"
     essential   = true
     portMappings = [{
       protocol      = "tcp"
-      containerPort = 8080
-      hostPort      = 8080
+      containerPort = "${var.container_port}"
+      hostPort      = "${var.container_port}"
     }]
     logConfiguration: {
       logDriver: "awslogs"
@@ -108,8 +108,8 @@ resource "aws_ecs_task_definition" "task_def" {
   }])
 
   tags = {
-    workload    = "workload1"
-    environment = "dev"
+    project     = var.project
+    environment = var.environment
   }
 }
 
@@ -120,7 +120,7 @@ resource "aws_cloudwatch_log_group" "log-group" {
 
 # Create the ALB target group for ECS.
 resource "aws_lb_target_group" "alb_ecs_tg" {
-  port        = 8080
+  port        = var.container_port
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = local.vpc

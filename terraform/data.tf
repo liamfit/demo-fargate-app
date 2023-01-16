@@ -1,6 +1,6 @@
 data "aws_vpc" "vpc" {
   tags  = {
-    workload = "workload1"
+    project = var.project
   }
 }
 
@@ -15,8 +15,8 @@ data "aws_resourcegroupstaggingapi_resources" "ecs_cluster" {
   resource_type_filters = ["ecs:cluster"]
   
   tag_filter {
-    key    = "workload"
-    values = ["workload1"]
+    key    = "project"
+    values = [var.project]
   }
 }
 
@@ -24,14 +24,14 @@ data "aws_resourcegroupstaggingapi_resources" "alb" {
   resource_type_filters = ["elasticloadbalancing:loadbalancer"]
   
   tag_filter {
-    key    = "workload"
-    values = ["workload1"]
+    key    = "project"
+    values = [var.project]
   }
 }
 
 data "aws_security_group" "ecs" {
   tags  = {
-    workload = "workload1"
+    project = var.project
   }
 }
 
