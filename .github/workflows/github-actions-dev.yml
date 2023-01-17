@@ -174,13 +174,11 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
       
       - name: Download task-definition.json
-        id: download
         uses: actions/download-artifact@v3
         with:
           name: task-definition
 
       - name: Download appspec.yaml
-        id: download
         uses: actions/download-artifact@v3
         with:
           name: appspec
