@@ -78,6 +78,12 @@ jobs:
         if: steps.apply.outcome == 'failure'
         run: exit 1
 
+      - name: Upload appspec.yaml
+        uses: actions/upload-artifact@v3
+        with:
+          name: appspec
+          path: ./appspec.yaml
+
   build:
     name: Build and Push
     needs: terraform
@@ -142,7 +148,7 @@ jobs:
           image: ${{ steps.build-image.outputs.image }}
           task-definition: task-definition.json
 
-      - name: Upload artifact
+      - name: Upload task-definition.json
         uses: actions/upload-artifact@v3
         with:
           name: task-definition
@@ -167,11 +173,17 @@ jobs:
           role-session-name: samplerolesession
           aws-region: ${{ secrets.AWS_REGION }}
       
-      - name: Download artifact
+      - name: Download task-definition.json
         id: download
         uses: actions/download-artifact@v3
         with:
           name: task-definition
+
+      - name: Download appspec.yaml
+        id: download
+        uses: actions/download-artifact@v3
+        with:
+          name: appspec
 
       - name: Rename file
         run: mv task-definition-*.json task-definition.json
