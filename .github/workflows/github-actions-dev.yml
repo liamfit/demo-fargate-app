@@ -186,3 +186,6 @@ jobs:
           service: ${{ env.REPO_SHORT_NAME }}
           cluster: ecs-fargate
           wait-for-service-stability: true
+          codedeploy-appspec: appspec.yaml
+          codedeploy-application: ${{ env.REPO_SHORT_NAME }}
+          codedeploy-deployment-group: ${{ env.REPO_SHORT_NAME }}-deploymentGroup
