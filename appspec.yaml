@@ -1,8 +1,0 @@
-Resources:
-  - TargetService:
-      Type: AWS::ECS::Service
-      Properties:
-        TaskDefinition: <TASK_DEFINITION>
-        LoadBalancerInfo:
-          ContainerName: demo-fargate-app
-          ContainerPort: 8080
