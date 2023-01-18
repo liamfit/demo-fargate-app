@@ -113,14 +113,19 @@ resource "aws_codedeploy_deployment_group" "app_deployment_group" {
       }
 
       target_group {
-        name = aws_lb_target_group.blue.name
+        name = aws_lb_target_group.bluegreen1.name
       }
 
       target_group {
-        name = aws_lb_target_group.green.name
+        name = aws_lb_target_group.bluegreen2.name
       }
     }
   }
+
+  depends_on = [
+    aws_lb_target_group.bluegreen1,
+    aws_lb_target_group.bluegreen2
+  ]
 }
 
 resource "local_file" "appspec" {

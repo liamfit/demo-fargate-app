@@ -60,7 +60,7 @@ resource "aws_ecs_service" "service" {
   }
  
   load_balancer {
-    target_group_arn = aws_lb_target_group.blue.arn
+    target_group_arn = aws_lb_target_group.bluegreen1.arn
     container_name   = "${var.service_name}"
     container_port   = "${var.container_port}"
   }
@@ -115,14 +115,16 @@ resource "aws_cloudwatch_log_group" "log_group" {
   name = "${var.service_name}-logs"
 }
 
-resource "aws_lb_target_group" "blue" {
+resource "aws_lb_target_group" "bluegreen1" {
+  name        = "${var.service_name}-bluegreen1"
   port        = "${var.container_port}"
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = local.vpc
 }
 
-resource "aws_lb_target_group" "green" {
+resource "aws_lb_target_group" "bluegreen2" {
+  name        = "${var.service_name}-bluegreen2"
   port        = "${var.container_port}"
   protocol    = "HTTP"
   target_type = "ip"
@@ -134,16 +136,7 @@ resource "aws_lb_listener_rule" "listener_rule" {
 
   action {
     type             = "forward"
-    forward {
-      target_group {
-        arn = aws_lb_target_group.blue.arn
-        weight = 100
-      }
-      target_group {
-        arn = aws_lb_target_group.green.arn
-        weight = 0
-      }
-    }
+    target_group_arn = aws_lb_target_group.bluegreen1.arn
   }
 
   condition {
